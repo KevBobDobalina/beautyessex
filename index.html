@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Culinary Journey: Beauty & Essex Las Vegas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Visualization & Content Choices:
+        - Report Introduction/Philosophy -> SPA Hero & Philosophy Sections (Styled Text Blocks using Tailwind) -> Goal: Inform -> Justification: Sets the context and core message effectively.
+        - Meal Acts (I, II, III with dishes, descriptions, prices) -> SPA "Culinary Journey" (HTML/CSS Tabs with Dish Cards) -> Goal: Organize/Inform -> Interaction: Click tabs to switch between Acts -> Justification: Allows focused exploration of each meal stage. Cards provide structured detail.
+        - Beverage Recommendations (types, names, prices, pairings) -> SPA "Perfect Pairings" (HTML/CSS Grouped Cards) -> Goal: Organize/Inform -> Justification: Clear presentation of beverage options by category.
+        - "Wow Factor" (Wonder Wheel, Louis XIII) -> SPA "'Wow' Factor" Section (HTML/CSS Feature Cards) -> Goal: Inform/Highlight -> Justification: Emphasizes signature experiences.
+        - Price Data & Summary Tables from Report -> SPA "Price & Summary" (HTML Tables for direct data, Chart.js Bar Chart for Act cost breakdown) -> Goal: Inform/Compare -> Justification: Provides transparent cost information and visual summary. Chart.js for visual cost comparison.
+        - Report Conclusion -> SPA Conclusion Section (Styled Text Block) -> Goal: Inform -> Justification: Summarizes the overall value proposition.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. All charts (if any beyond the planned price breakdown) will be Chart.js (Canvas). Diagrams/Flows via HTML/CSS. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFBEB; /* amber-50 */
+            color: #3F3F46; /* zinc-700 */
+            scroll-behavior: smooth;
+        }
+        .section-title {
+            font-size: 2.25rem; /* text-3xl */
+            font-weight: 700;
+            color: #D97706; /* amber-600 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            text-align: center;
+        }
+        .sub-section-title {
+            font-size: 1.875rem; /* text-2xl */
+            font-weight: 600;
+            color: #78350F; /* amber-800 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            padding: 1.5rem; /* p-6 */
+            transition: transform 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .nav-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 500;
+            color: #3F3F46; /* zinc-700 */
+            background-color: #F5F5F4; /* stone-100 */
+            transition: background-color 0.3s, color 0.3s;
+            border: 1px solid #D6D3D1; /* stone-300 */
+        }
+        .nav-button:hover, .nav-button.active {
+            background-color: #D97706; /* amber-600 */
+            color: #FFFFFF;
+        }
+        .act-content {
+            display: none;
+        }
+        .act-content.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+            background-color: #FFFFFF;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+                max-height: 450px;
+            }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #E5E5E5; /* neutral-200 */
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.875rem; /* text-sm */
+        }
+        th {
+            background-color: #F5F5F4; /* stone-100 */
+            color: #78350F; /* amber-800 */
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #FAFAF9; /* stone-50 */
+        }
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: rgba(255, 251, 235, 0.9); /* amber-50 with opacity */
+            backdrop-filter: blur(5px);
+            padding: 0.75rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav id="navbar" class="sticky-nav">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap justify-center space-x-2 sm:space-x-4">
+                <a href="#philosophy" class="nav-button text-xs sm:text-sm">Philosophy</a>
+                <a href="#journey" class="nav-button text-xs sm:text-sm">The Journey</a>
+                <a href="#pairings" class="nav-button text-xs sm:text-sm">Pairings</a>
+                <a href="#wowfactor" class="nav-button text-xs sm:text-sm">Wow Factor</a>
+                <a href="#summary" class="nav-button text-xs sm:text-sm">Summary & Cost</a>
+                <a href="#conclusion" class="nav-button text-xs sm:text-sm">Conclusion</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center py-12 md:py-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#78350F] mb-4">Crafting Your Unforgettable Culinary Journey</h1>
+            <p class="text-xl md:text-2xl text-[#D97706]">An Interactive Guide to Beauty & Essex, Las Vegas</p>
+        </header>
+
+        <section id="philosophy" class="py-10 md:py-16">
+            <h2 class="section-title">The Allure & Philosophy</h2>
+            <div class="max-w-3xl mx-auto text-center space-y-4 text-lg">
+                <p>Beauty & Essex in Las Vegas transcends the conventional; it's a destination marrying glamour, sophistication, and culinary innovation. Its "jewel-box" interior sets a tone of discovery and allure, reflecting a dual identity of aesthetic luxury and classic culinary roots.</p>
+                <p>The dining philosophy is profoundly <strong class="text-[#D97706]">experiential and communal</strong>. Menu categories like "Jewels on Toast" and "Shareables," alongside signature items like "Beauty's Wonder Wheel," emphasize shared, interactive moments. It's a collective journey of flavors, fostering an engaging social atmosphere.</p>
+                <p>This guide proposes a culinary journey leveraging these unique strengths, ensuring an unforgettable evening for the discerning diner—as much about shared experience as exquisite flavors.</p>
+            </div>
+        </section>
+
+        <section id="journey" class="py-10 md:py-16 bg-[#F5F5F4] rounded-xl p-6 md:p-10">
+            <h2 class="section-title">The Culinary Journey: A Three-Act Experience</h2>
+            <p class="text-center text-lg mb-8 max-w-3xl mx-auto">The proposed meal is a progressive tasting experience, designed around Beauty & Essex's shareable concept. This approach maximizes exploration of diverse flavors and culinary creativity.</p>
+            
+            <div class="flex justify-center space-x-2 sm:space-x-4 mb-8">
+                <button class="nav-button act-tab-button active" data-act="act1">Act I: Overture</button>
+                <button class="nav-button act-tab-button" data-act="act2">Act II: Main Event</button>
+                <button class="nav-button act-tab-button" data-act="act3">Act III: Sweet Encore</button>
+            </div>
+
+            <div id="act1" class="act-content active">
+                <h3 class="sub-section-title text-center">Act I: The Overture – Starters & Small Plates</h3>
+                <p class="text-center mb-6 text-gray-700">Awaken the palate with fresh, vibrant flavors and textural contrasts, setting an elegant yet intriguing tone. Designed for sharing.</p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Tuna Poke Wonton Tacos <span class="text-sm font-normal text-gray-500">($23)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Chiffonade cilantro, radish, wasabi kewpie.</p>
+                        <p class="text-xs italic text-gray-500">Visually stunning, texturally exciting. Crisp wonton, tender tuna, creamy spicy kick. Signals innovative spirit.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Grilled Cheese & Tomato Soup Dumplings <span class="text-sm font-normal text-gray-500">($21)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Smoked bacon.</p>
+                        <p class="text-xs italic text-gray-500">Iconic. Fusion of comfort food & refined technique. Rich savory soup, delicate dumpling, smoky bacon. Playful yet sophisticated.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Yellowtail Crudo <span class="text-sm font-normal text-gray-500">($29)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Crispy garlic, rice pearls, pickled chilies, avocado mousse, tamari soy, sesame chili oil.</p>
+                        <p class="text-xs italic text-gray-500">Delicate flavors, intricate textures. Buttery yellowtail, crunch, creaminess, subtle heat, umami. Highlights quality ingredients.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="act2" class="act-content">
+                <h3 class="sub-section-title text-center">Act II: The Main Event – Entrées & Complements</h3>
+                <p class="text-center mb-6 text-gray-700">Substantial, flavorful dishes as the centerpiece, showcasing prowess with larger proteins and elevated classics. Ideal for sharing.</p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Beef Wellington <span class="text-sm font-normal text-gray-500">($64)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Filet mignon, foie gras mousse, mushroom duxelles, red wine sauce.</p>
+                        <p class="text-xs italic text-gray-500">Culinary masterpiece, statement piece. Premium filet, rich foie gras, earthy mushrooms, perfect pastry. Classic, refined indulgence.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Gochujang Salmon <span class="text-sm font-normal text-gray-500">($39)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Kimchi slaw, black garlic risotto, ginger aioli, furikake.</p>
+                        <p class="text-xs italic text-gray-500">Vibrant, flavorful, lighter alternative. Spicy-sweet glaze, tangy slaw, umami risotto. Crucial balance and variety.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Truffle Mac & Cheese <span class="text-sm font-normal text-gray-500">($22, +$15 Lobster)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Truffle butter, fontina & white cheddar mornay, crispy Reggianito.</p>
+                        <p class="text-xs italic text-gray-500">Epitome of decadent comfort. Aromatic truffle elevates a classic. Complements main courses.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Fried Brussels Sprouts <span class="text-sm font-normal text-gray-500">($15)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Sweet teardrop peppers, sherry vinegar, Fresno aioli.</p>
+                        <p class="text-xs italic text-gray-500">Necessary textural contrast, refreshing acidity. Sophisticated tang and brightness. Keeps palate engaged.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="act3" class="act-content">
+                <h3 class="sub-section-title text-center">Act III: The Sweet Encore – Desserts</h3>
+                <p class="text-center mb-6 text-gray-700">A memorable and visually spectacular conclusion, offering playful innovation and classic comfort, designed for sharing.</p>
+                <div class="flex justify-center">
+                    <div class="card max-w-md text-center">
+                        <h4 class="font-semibold text-xl text-[#D97706] mb-2">Beauty's Wonder Wheel <span class="text-sm font-normal text-gray-500">($38)</span></h4>
+                        <p class="text-sm text-gray-600 mb-1">Chef's selection for two or more people.</p>
+                        <p class="text-2xl my-3">🎡</p>
+                        <p class="text-xs italic text-gray-500">Quintessential B&E dessert. Grand finale, aligns with social dining. Variety, creativity, surprise. Interactive, visually stunning. Embodies shared indulgence and playful presentation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pairings" class="py-10 md:py-16">
+            <h2 class="section-title">The Perfect Pairing: Beverage Recommendations</h2>
+            <p class="text-center text-lg mb-8 max-w-3xl mx-auto">Enhance each stage with thoughtful, sophisticated selections, from invigorating starts to luxurious conclusions.</p>
+            
+            <div>
+                <h3 class="sub-section-title">Opening Cocktails: Setting the Mood</h3>
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="card">
+                        <h4 class="font-semibold text-lg text-[#D97706] mb-1">Mother of Pearl <span class="text-sm font-normal text-gray-500">($21)</span></h4>
+                        <p class="text-xs text-gray-500 mb-1">Elyx vodka, white peach, lavender, lemon, orange bitters, aqua faba.</p>
+                        <p class="text-sm italic text-gray-600">Delicate, velvety, floral. Elegant, ideal aperitif. Sets sophisticated tone.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg text-[#D97706] mb-1">O.D.B. "Old Dirty Bramble" <span class="text-sm font-normal text-gray-500">($23)</span></h4>
+                        <p class="text-xs text-gray-500 mb-1">Casamigos Blanco tequila, smoked blackberries, honey, ginger, lemon.</p>
+                        <p class="text-sm italic text-gray-600">Smoky, sweet, zesty. Bold, intriguing start. Piques palate.</p>
+                    </div>
+                </div>
+
+                <h3 class="sub-section-title">Wine Pairings: Enhancing Each Course</h3>
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="card">
+                        <h4 class="font-semibold text-lg text-[#D97706] mb-1">For Act I (Starters)</h4>
+                        <p class="text-sm text-gray-600 mb-1"><strong class="text-gray-700">Sauvignon Blanc, Cloudy Bay (NZ, 2023)</strong> - $26/glass: Crisp acidity, vibrant citrus. Cuts richness, versatile.</p>
+                        <p class="text-sm text-gray-600"><strong class="text-gray-700">Champagne, G.H. Mumm 'Grand Cordon' (FR)</strong> - $25/glass: Celebratory. Fine effervescence, pairs well with seafood/savory.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg text-[#D97706] mb-1">For Act II (Main Courses)</h4>
+                        <p class="text-sm text-gray-600 mb-1"><strong class="text-gray-700">Cabernet Sauvignon, Stags' Leap (Napa, 2021)</strong> - $30/glass: Robust, elegant red. Perfect for Beef Wellington.</p>
+                        <p class="text-sm text-gray-600"><strong class="text-gray-700">Pinot Noir, Freeman (Russian River, 2022)</strong> - $26/glass: Lighter-bodied red. Harmonious with Gochujang Salmon.</p>
+                    </div>
+                </div>
+
+                <h3 class="sub-section-title">After Dinner Drinks: The Grand Conclusion</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                     <div class="card">
+                        <h4 class="font-semibold text-lg text-[#D97706] mb-1">Scotch: The Dalmore 25 Yr <span class="text-sm font-normal text-gray-500">($265)</span></h4>
+                        <p class="text-sm italic text-gray-600">Exceptional, rare single malt. Sophisticated, smooth end.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg text-[#D97706] mb-1">Cognac: Rémy Martin 'Louis XIII' <span class="text-sm font-normal text-gray-500">($570/1oz)</span></h4>
+                        <p class="text-sm italic text-gray-600">Pinnacle of luxury. Ultimate refinement.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg text-[#D97706] mb-1">Dessert Wine: Far Niente 'Dolce' <span class="text-sm font-normal text-gray-500">($45)</span></h4>
+                        <p class="text-sm italic text-gray-600">Luscious, sweet. Complements Wonder Wheel.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="wowfactor" class="py-10 md:py-16 bg-[#F5F5F4] rounded-xl p-6 md:p-10">
+            <h2 class="section-title">'Wow' Factor Highlights</h2>
+            <p class="text-center text-lg mb-8 max-w-3xl mx-auto">Beyond exceptional dishes, Beauty & Essex offers signature experiences designed to be unforgettable.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card text-center">
+                    <div class="text-5xl mb-3">🎡</div>
+                    <h3 class="sub-section-title text-[#D97706]">Beauty's Wonder Wheel</h3>
+                    <p class="text-gray-700">The quintessential shared dessert experience. A chef's selection presented on a miniature Ferris wheel, embodying playful indulgence and visual spectacle. ($38)</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-5xl mb-3">👑</div>
+                    <h3 class="sub-section-title text-[#D97706]">Rémy Martin 'Louis XIII' Cognac</h3>
+                    <p class="text-gray-700">The absolute pinnacle of luxury for a post-dinner indulgence. An unparalleled digestif for a truly memorable conclusion. (from $285/0.5oz)</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="summary" class="py-10 md:py-16">
+            <h2 class="section-title">Meal Summary & Cost Overview</h2>
+            <p class="text-center text-lg mb-8 max-w-3xl mx-auto">A comprehensive look at the curated dishes, their pricing, and suggested pairings for this unforgettable culinary journey.</p>
+
+            <div class="mb-10">
+                <h3 class="sub-section-title text-center">Cost Breakdown per Act (Food Only)</h3>
+                <div class="chart-container">
+                    <canvas id="costBreakdownChart"></canvas>
+                </div>
+                <p class="text-xs text-center mt-2 text-gray-500">Note: Chart shows food costs for the recommended shared items per Act. Beverage costs are separate.</p>
+            </div>
+            
+            <div class="overflow-x-auto card mb-10">
+                <h3 class="sub-section-title">Curated Meal Details</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Course/Act</th>
+                            <th>Dish Name</th>
+                            <th>Key Ingredients/Description Snippet</th>
+                            <th>Price</th>
+                            <th>Recommended Beverage Pairing</th>
+                            <th>Why it's Perfect (Brief Rationale)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Act I: The Overture</td>
+                            <td>Tuna Poke Wonton Tacos</td>
+                            <td>chiffonade cilantro, radish, wasabi kewpie</td>
+                            <td>$23</td>
+                            <td>Mother of Pearl Cocktail / G.H. Mumm Champagne</td>
+                            <td>Playful, fresh start, Asian influence</td>
+                        </tr>
+                        <tr>
+                            <td>Act I: The Overture</td>
+                            <td>Grilled Cheese & Tomato Soup Dumplings</td>
+                            <td>smoked bacon</td>
+                            <td>$21</td>
+                            <td>Mother of Pearl Cocktail / G.H. Mumm Champagne</td>
+                            <td>Iconic, elevated comfort</td>
+                        </tr>
+                        <tr>
+                            <td>Act I: The Overture</td>
+                            <td>Yellowtail Crudo</td>
+                            <td>crispy garlic, rice pearls, pickled chilies, avocado mousse</td>
+                            <td>$29</td>
+                            <td>Sauvignon Blanc, Cloudy Bay</td>
+                            <td>Refined elegance, delicate flavors</td>
+                        </tr>
+                        <tr>
+                            <td>Act II: The Main Event</td>
+                            <td>Beef Wellington</td>
+                            <td>filet mignon, foie gras mousse, mushroom duxelles</td>
+                            <td>$64</td>
+                            <td>Stags' Leap Cabernet Sauvignon</td>
+                            <td>Luxurious centerpiece, classic indulgence</td>
+                        </tr>
+                        <tr>
+                            <td>Act II: The Main Event</td>
+                            <td>Gochujang Salmon</td>
+                            <td>kimchi slaw, black garlic risotto, ginger aioli</td>
+                            <td>$39</td>
+                            <td>Freeman Pinot Noir</td>
+                            <td>Vibrant, balanced alternative</td>
+                        </tr>
+                        <tr>
+                            <td>Act II: The Main Event</td>
+                            <td>Truffle Mac & Cheese</td>
+                            <td>truffle butter, fontina & white cheddar mornay</td>
+                            <td>$22</td>
+                            <td>Stags' Leap Cabernet Sauvignon</td>
+                            <td>Decadent comfort, complements richness</td>
+                        </tr>
+                        <tr>
+                            <td>Act II: The Main Event</td>
+                            <td>Fried Brussels Sprouts</td>
+                            <td>sweet teardrop peppers, sherry vinegar, Fresno aioli</td>
+                            <td>$15</td>
+                            <td>Freeman Pinot Noir</td>
+                            <td>Textural contrast, cuts richness</td>
+                        </tr>
+                        <tr>
+                            <td>Act III: The Sweet Encore</td>
+                            <td>Beauty's Wonder Wheel</td>
+                            <td>chef's selection for two or more people</td>
+                            <td>$38</td>
+                            <td>Far Niente 'Dolce' / Louis XIII Cognac</td>
+                            <td>Ultimate shared finale, theatrical presentation</td>
+                        </tr>
+                         <tr>
+                            <td colspan="3" class="font-bold text-right">Estimated Food Subtotal:</td>
+                            <td colspan="3" class="font-bold">$251</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="overflow-x-auto card">
+                <h3 class="sub-section-title">Signature Beverage Pairings Summary</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Beverage Type</th>
+                            <th>Beverage Name</th>
+                            <th>Key Characteristics/Flavor Profile</th>
+                            <th>Price</th>
+                            <th>Paired With/Role in Meal</th>
+                            <th>Rationale (Brief)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Signature Cocktail</td>
+                            <td>Mother of Pearl</td>
+                            <td>Delicate, velvety, floral</td>
+                            <td>$21</td>
+                            <td>Aperitif/Starters</td>
+                            <td>Sets luxurious tone</td>
+                        </tr>
+                        <tr>
+                            <td>Signature Cocktail</td>
+                            <td>O.D.B. "Old Dirty Bramble"</td>
+                            <td>Smoky, sweet, zesty</td>
+                            <td>$23</td>
+                            <td>Aperitif/Starters</td>
+                            <td>Bold, intriguing start</td>
+                        </tr>
+                        <tr>
+                            <td>Wine by the Glass</td>
+                            <td>Sauvignon Blanc, Cloudy Bay</td>
+                            <td>Crisp acidity, vibrant citrus</td>
+                            <td>$26</td>
+                            <td>Act I Starters</td>
+                            <td>Cuts richness, refreshing</td>
+                        </tr>
+                        <tr>
+                            <td>Wine by the Glass</td>
+                            <td>Champagne, G.H. Mumm 'Grand Cordon'</td>
+                            <td>Fine effervescence, subtle brioche</td>
+                            <td>$25</td>
+                            <td>Act I Starters</td>
+                            <td>Celebratory, palate cleanser</td>
+                        </tr>
+                        <tr>
+                            <td>Wine by the Glass</td>
+                            <td>Cabernet Sauvignon, Stags' Leap</td>
+                            <td>Robust, elegant red, dark fruit</td>
+                            <td>$30</td>
+                            <td>Beef Wellington</td>
+                            <td>Complements richness of prime meats</td>
+                        </tr>
+                        <tr>
+                            <td>Wine by the Glass</td>
+                            <td>Pinot Noir, Freeman</td>
+                            <td>Lighter-bodied red, earthy, red fruit</td>
+                            <td>$26</td>
+                            <td>Gochujang Salmon</td>
+                            <td>Harmonious with delicate fish</td>
+                        </tr>
+                        <tr>
+                            <td>After Dinner Drink</td>
+                            <td>Scotch: The Dalmore 25 Yr</td>
+                            <td>Exceptional, smooth single malt</td>
+                            <td>$265</td>
+                            <td>Post-Dessert/Digestif</td>
+                            <td>Ultimate sophisticated conclusion</td>
+                        </tr>
+                        <tr>
+                            <td>After Dinner Drink</td>
+                            <td>Cognac: Rémy Martin 'Louis XIII'</td>
+                            <td>Unparalleled, complex Cognac</td>
+                            <td>$570 (1oz)</td>
+                            <td>Post-Dessert/Digestif</td>
+                            <td>Pinnacle of luxury</td>
+                        </tr>
+                        <tr>
+                            <td>Dessert Wine</td>
+                            <td>Far Niente 'Dolce' Napa Valley</td>
+                            <td>Luscious, sweet, stone fruit, honey</td>
+                            <td>$45</td>
+                            <td>Beauty's Wonder Wheel/Dessert</td>
+                            <td>Enhances sweetness and complexity</td>
+                        </tr>
+                    </tbody>
+                </table>
+                 <p class="text-xs text-center mt-2 text-gray-500">Note: Beverage prices are per serving as indicated. Total beverage cost depends on selections.</p>
+            </div>
+        </section>
+
+        <section id="conclusion" class="py-10 md:py-16 bg-[#F5F5F4] rounded-xl p-6 md:p-10">
+            <h2 class="section-title">Why This Meal is "Perfect"</h2>
+            <div class="max-w-3xl mx-auto text-center space-y-4 text-lg">
+                <p>This meticulously curated journey seamlessly blends culinary innovation, luxurious ingredients, diverse global flavors, and comforting elements. Each course is designed to satisfy the palate and engage the senses, ensuring a dynamic progression of tastes and textures.</p>
+                <p>It embodies the essence of Beauty & Essex: chic ambiance, commitment to quality, playful yet sophisticated culinary approach, and inherent emphasis on <strong class="text-[#D97706]">shared indulgence</strong>. This meal is crafted not just to satisfy hunger, but to delight all senses, create lasting memories, and perfectly suit the discerning lifestyle connoisseur seeking an extraordinary Las Vegas evening.</p>
+            </div>
+        </section>
+
+        <footer class="text-center py-8 mt-10 border-t border-[#D6D3D1]">
+            <p class="text-sm text-gray-500">&copy; <span id="currentYear"></span> Interactive Culinary Guide. Inspired by Beauty & Essex Las Vegas.</p>
+            <p class="text-xs text-gray-400 mt-1">All prices and offerings based on the source report and subject to change.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sticky Nav active state based on scroll
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('#navbar a');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) { // Adjusted offset for sticky nav height
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            // Smooth scroll for nav links
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Culinary Journey Tabs
+            const actTabButtons = document.querySelectorAll('.act-tab-button');
+            const actContents = document.querySelectorAll('.act-content');
+
+            actTabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetAct = button.dataset.act;
+
+                    actTabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    actContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === targetAct) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            // Cost Breakdown Chart
+            const costData = {
+                act1: 23 + 21 + 29, // Tuna, Grilled Cheese, Crudo
+                act2: 64 + 39 + 22 + 15, // Wellington, Salmon, Mac, Sprouts
+                act3: 38  // Wonder Wheel
+            };
+
+            const costBreakdownCtx = document.getElementById('costBreakdownChart');
+            if (costBreakdownCtx) {
+                new Chart(costBreakdownCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Act I: Overture', 'Act II: Main Event', 'Act III: Sweet Encore'],
+                        datasets: [{
+                            label: 'Estimated Food Cost per Act ($)',
+                            data: [costData.act1, costData.act2, costData.act3],
+                            backgroundColor: [
+                                'rgba(217, 119, 6, 0.7)', // amber-600 with opacity
+                                'rgba(120, 53, 15, 0.7)', // amber-800 with opacity
+                                'rgba(251, 191, 36, 0.7)'  // amber-400 with opacity
+                            ],
+                            borderColor: [
+                                'rgba(217, 119, 6, 1)',
+                                'rgba(120, 53, 15, 1)',
+                                'rgba(251, 191, 36, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cost ($)',
+                                    color: '#3F3F46' // zinc-700
+                                },
+                                ticks: { color: '#3F3F46' }
+                            },
+                            y: {
+                                ticks: { color: '#3F3F46' }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.x !== null) {
+                                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.x);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Set current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+        });
+    </script>
+</body>
+</html>
